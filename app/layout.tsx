@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
 import { Analytics } from '@vercel/analytics/react';
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex min-h-screen w-full flex-col">{children}</body>
+      <Toaster />
       <Analytics />
     </html>
   );

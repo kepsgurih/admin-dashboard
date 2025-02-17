@@ -5,6 +5,7 @@ import {
   Package,
   Package2,
   PanelLeft,
+  Quote,
   Settings,
   ShoppingCart,
   Users2
@@ -70,19 +71,19 @@ function DesktopNav() {
           <span className="sr-only">Acme Inc</span>
         </Link>
 
-        <NavItem href="#" label="Dashboard">
+        <NavItem href="/" label="Dashboard">
           <Home className="h-5 w-5" />
         </NavItem>
 
-        <NavItem href="#" label="Orders">
+        <NavItem href="/apps/invoice" label="Invoice">
           <ShoppingCart className="h-5 w-5" />
         </NavItem>
 
-        <NavItem href="/" label="Products">
-          <Package className="h-5 w-5" />
+        <NavItem href="/apps/quotation" label="Quotation">
+          <Quote className="h-5 w-5" />
         </NavItem>
 
-        <NavItem href="/customers" label="Customers">
+        <NavItem href="/apps/customers" label="Customers">
           <Users2 className="h-5 w-5" />
         </NavItem>
 
