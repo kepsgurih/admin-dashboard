@@ -1,7 +1,9 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import { NextRequest, NextResponse } from "next/server";
 import { FormatRupiah } from "@/lib/format";
 import moment from "moment";
+
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
@@ -16,11 +18,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     // Membuka browser puppeteer
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless === "new" ? true : (chromium.headless === "false" ? false : true),
+      defaultViewport: { width: 1280, height: 800 },
+    });
     const page = await browser.newPage();
-
-    // Set viewport untuk memastikan konten sepenuhnya ditampilkan
-    await page.setViewport({ width: 1280, height: 800 });
 
     // Buat HTML untuk PDF
     const htmlContent = `
