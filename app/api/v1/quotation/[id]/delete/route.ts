@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
-    const { id } = await params;
-
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const id = (await params).id;
+  if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     try {
         // Cari quotation berdasarkan ID
         const quotation = await prisma.quotation.findUnique({

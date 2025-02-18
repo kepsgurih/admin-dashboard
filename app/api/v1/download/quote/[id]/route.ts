@@ -1,11 +1,11 @@
 import puppeteer from "puppeteer";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { FormatRupiah } from "@/lib/format";
 import moment from "moment";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
-
+  if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
   try {
     // Fetch data quotation dari database atau API
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}`);
@@ -167,7 +167,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       <tbody>
       ${JSON.parse(quotation.items || "[]")
         .map(
-          (item: any, index:number) => `
+          (item: any, index: number) => `
         <tr>
 <td>${index + 1}</td>
           <td>${item.description}</td>
@@ -210,6 +210,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     });
   } catch (error) {
     console.error("Error generating PDF:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

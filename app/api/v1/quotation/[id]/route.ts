@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const id = (await params).id
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const id = (await params).id;
+    if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     const quotation = await prisma.quotation.findUnique({
         include: {
             customer: true
@@ -14,8 +15,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.json(quotation);
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const { id } = await params; // Gunakan await untuk menunggu parameter
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const id = (await params).id;
+    if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     const data = await req.json();
     try {
         const quotation = await prisma.quotation.update({
@@ -30,9 +32,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
-    const { id } = await params;
-
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const id = (await params).id;
+    if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     try {
         // Cari quotation berdasarkan ID
         const quotation = await prisma.quotation.findUnique({
@@ -79,7 +81,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             where: { id },
             data: {
                 converted: true,
-                status:'invoiced',
+                status: 'invoiced',
                 approved: true,
             },
         });
