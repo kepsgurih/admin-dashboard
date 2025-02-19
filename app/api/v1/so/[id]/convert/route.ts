@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             where: { id },
             data: {
                 converted: true,
-                status: 'so',
+                status: 'Invoiced',
                 approved: true,
             },
         });

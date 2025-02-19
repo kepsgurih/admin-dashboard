@@ -21,11 +21,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const data = await req.json();
     try {
         const quotation = await prisma.invoice.update({
-            where: { id }, // Menentukan ID untuk melakukan update
-            data, // Data yang diperbarui
+            where: { id }, 
+            data, 
         });
 
-        return NextResponse.json(quotation, { status: 200 }); // Gunakan status 200 untuk update
+        return NextResponse.json(quotation, { status: 200 });
     } catch (erro) {
         return NextResponse.json({ message: erro }, { status: 501 })
     }
@@ -43,24 +43,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 id
             }
         });
-        if (invoices?.quotation) {
-            await prisma.quotation.update({
+        if (invoices?.salesOrder) {
+            await prisma.salesOrder.update({
                 where: {
-                    id: invoices?.quotation || undefined
-                }, // Menentukan ID untuk melakukan update
+                    id: invoices?.salesOrder || undefined
+                },
                 data: {
                     converted: false
-                }, // Data yang diperbarui
+                },
             });
         }
 
         await prisma.invoice.update({
             where: {
                 id: id
-            }, // Menentukan ID untuk melakukan update
+            },
             data: {
                 removed: true
-            }, // Data yang diperbarui
+            },
         });
 
         return NextResponse.json({ message: 'Success delete' }, { status: 200 }); // Gunakan status 200 untuk update

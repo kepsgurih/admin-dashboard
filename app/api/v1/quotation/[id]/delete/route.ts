@@ -5,7 +5,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const id = (await params).id;
   if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     try {
-        // Cari quotation berdasarkan ID
         const quotation = await prisma.quotation.findUnique({
             where: { id },
             include: {
@@ -17,11 +16,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             return NextResponse.json({ message: "Quotation not found" }, { status: 404 });
         }
 
-        // Update field 'removed' menjadi true
         const updatedQuotation = await prisma.quotation.update({
             where: { id },
             data: {
-                removed: true, // Menandai quotation sebagai "removed"
+                removed: true,
             },
         });
 

@@ -21,11 +21,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const data = await req.json();
     try {
         const quotation = await prisma.quotation.update({
-            where: { id }, // Menentukan ID untuk melakukan update
-            data, // Data yang diperbarui
+            where: { id },
+            data,
         });
 
-        return NextResponse.json(quotation, { status: 200 }); // Gunakan status 200 untuk update
+        return NextResponse.json(quotation, { status: 200 });
     } catch (erro) {
         return NextResponse.json({ message: erro }, { status: 501 })
     }
@@ -36,7 +36,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const id = (await params).id;
     if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
     try {
-        // Cari quotation berdasarkan ID
         const quotation = await prisma.quotation.findUnique({
             where: { id },
             include: {
@@ -48,14 +47,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             return NextResponse.json({ message: "Quotation not found" }, { status: 404 });
         }
 
-        // Cek jika quotation sudah dikonversi
         if (quotation.converted) {
             return NextResponse.json({ message: "Quotation already converted" }, { status: 400 });
         }
 
-        console.log(quotation)
-
-        // Membuat Invoice baru berdasarkan data dari Quotation
         const salesOrder = await prisma.salesOrder.create({
             data: {
                 quotation: quotation.id,
@@ -78,7 +73,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             where: { id },
             data: {
                 converted: true,
-                status: 'so',
+                status: 'Converted to Sales Order',
                 approved: true,
             },
         });
