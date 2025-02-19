@@ -56,14 +56,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         console.log(quotation)
 
         // Membuat Invoice baru berdasarkan data dari Quotation
-        const invoice = await prisma.invoice.create({
+        const salesOrder = await prisma.salesOrder.create({
             data: {
                 quotation: quotation.id,
                 customerId: quotation.customerId,
                 converted: true,
-                // customer: {
-                //     connect: { id: quotation.customerId }
-                // },
                 items: quotation.items ?? [],
                 taxRate: quotation.taxRate,
                 subTotal: quotation.subTotal,
@@ -81,12 +78,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             where: { id },
             data: {
                 converted: true,
-                status: 'invoiced',
+                status: 'so',
                 approved: true,
             },
         });
 
-        return NextResponse.json({ message: "Quotation converted to invoice", invoice }, { status: 200 });
+        return NextResponse.json({ message: "Quotation converted to sales order", salesOrder }, { status: 200 });
 
     } catch (error) {
         return NextResponse.json({ message: error }, { status: 500 });

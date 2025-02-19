@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,49 +10,84 @@ import { DataTable } from '@/components/table/table-customer/data-table';
 import moment from 'moment';
 import { FormatRupiah } from '@/lib/format';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Printer, FilePlus, Trash2, MoreVertical } from 'lucide-react';
+import { Printer, FilePlus, Trash2, MoreVertical, DollarSign } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
-export default function QuotationDetailPage() {
+export default function invoiceDetailPage() {
   const { id } = useParams();
-  const [quotation, setQuotation] = useState<any>(null);
+  const [invoice, setinvoice] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter()
 
   useEffect(() => {
-    async function fetchQuotation() {
+    async function fetchinvoice() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch quotation');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch invoice');
 
         const data = await response.json();
-        setQuotation(data);
+        setinvoice(data);
       } catch (error) {
-        console.error('Error fetching quotation:', error);
+        console.error('Error fetching invoice:', error);
       } finally {
         setLoading(false);
       }
     }
-    fetchQuotation();
+    fetchinvoice();
   }, [id]);
 
-  const handleConvertToInvoice = async () => {
+  const handlePrintPDF = async () => {
+    const pdfUrl = `/api/v1/download/inv/${id}`;
+
+    try {
+      // Fetch file PDF dari server
+      const response = await fetch(pdfUrl);
+
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF");
+      }
+
+      const blob = await response.blob();
+
+      // Membuat URL untuk file PDF
+      const url = window.URL.createObjectURL(blob);
+
+      // Membuat elemen <a> untuk melakukan download PDF
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice_${id}.pdf`;
+
+      // Programatically klik untuk mulai download
+      link.click();
+
+      // Release URL setelah selesai
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error printing PDF:", error);
+    }
+  };
+
+  const handlePay = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}`, {
-        method: "POST",
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          status: 'paid'
+        })
       });
-  
+
       const result = await response.json();
-  
+
       // Jika berhasil, tampilkan toast success dengan pesan dari API
       if (response.ok) {
-        toast.success(result.message || "Quotation successfully converted to invoice");
+        toast.success(result.message || "Invoice paid");
         router.push('/apps/invoice')
       } else {
         // Jika gagal, tampilkan toast error dengan pesan dari API
-        toast.error(result.message || "An error occurred while converting quotation");
+        toast.error(result.message || "An error occurred while paid");
       }
     } catch (error) {
       console.error(error);
@@ -62,57 +97,23 @@ export default function QuotationDetailPage() {
       setLoading(false);
     }
   };
-  
 
-
-  const handlePrintPDF = async () => {
-    const pdfUrl = `/api/v1/download/quote/${id}`;
-    
-    try {
-      // Fetch file PDF dari server
-      const response = await fetch(pdfUrl);
-      
-      if (!response.ok) {
-        throw new Error("Failed to generate PDF");
-      }
-  
-      const blob = await response.blob();
-      
-      // Membuat URL untuk file PDF
-      const url = window.URL.createObjectURL(blob);
-      
-      // Membuat elemen <a> untuk melakukan download PDF
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `quotation_${id}.pdf`;
-      
-      // Programatically klik untuk mulai download
-      link.click();
-      
-      // Release URL setelah selesai
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error printing PDF:", error);
-    }
-  };
-  
-
-  const handleDeleteQuotation = async () => {
+  const handleDeleteinvoice = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}/delete`, {
-        method: "POST",
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`, {
+        method: "POST"
       });
-  
+
       const result = await response.json();
-  
+
       // Jika berhasil, tampilkan toast success dengan pesan dari API
       if (response.ok) {
-        toast.success(result.message || "Quotation delete");
-        router.push('/apps/quotation')
+        toast.success(result.message || "Invoice Deleted");
+        router.push('/apps/invoice')
       } else {
         // Jika gagal, tampilkan toast error dengan pesan dari API
-        toast.error(result.message || "An error occurred while delete quotation");
+        toast.error(result.message || "An error occurred while delete invoice");
       }
     } catch (error) {
       console.error(error);
@@ -140,10 +141,10 @@ export default function QuotationDetailPage() {
         <CardHeader className="flex flex-row items-center justify-between gap-2">
           {/* 🏷️ Bagian Kiri - Judul */}
           <div>
-            <CardTitle>Quotation Details</CardTitle>
+            <CardTitle>Invoice Details</CardTitle>
             <CardDescription>
-              Detail of quotation{' '}
-              {loading ? <Skeleton className="h-5 w-32 inline-block" /> : `#${quotation.id}`}
+              Detail of Invoice{' '}
+              {loading ? <Skeleton className="h-5 w-32 inline-block" /> : `#${invoice.id}`}
             </CardDescription>
           </div>
 
@@ -155,13 +156,13 @@ export default function QuotationDetailPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleConvertToInvoice}>
-                <FilePlus size={16} className="mr-2" /> Convert to Sales Order
+              <DropdownMenuItem onClick={handlePay}>
+                <DollarSign size={16} className="mr-2" /> Pay
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handlePrintPDF}>
                 <Printer size={16} className="mr-2" /> Print PDF
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDeleteQuotation} className="text-red-600">
+              <DropdownMenuItem onClick={handleDeleteinvoice} className="text-red-600">
                 <Trash2 size={16} className="mr-2" /> Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -179,29 +180,29 @@ export default function QuotationDetailPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
               <p>
-                <strong>Customer:</strong> {quotation?.customer?.name}
+                <strong>Customer:</strong> {invoice?.customer?.name}
               </p>
               <p>
-                <strong>Document Number:</strong> {`QUOTE/${moment(quotation.createdDate).format('DD/DDD/MM/YY')}`}
+                <strong>Document Number:</strong> {`INVOICE/${moment(invoice.createdDate).format('DD/DDD/MM/YY')}`}
               </p>
               <p>
-                <strong>Issue Date:</strong> {moment(quotation.issueDate).format('DD MMMM YYYY HH:mm')}
+                <strong>Issue Date:</strong> {moment(invoice.issueDate).format('DD MMMM YYYY HH:mm')}
               </p>
-              {quotation.validUntil && (
+              {invoice.validUntil && (
                 <p>
-                  <strong>Valid Until:</strong> {moment(quotation.validUntil).format('DD MMM YYYY HH:mm')}
+                  <strong>Valid Until:</strong> {moment(invoice.validUntil).format('DD MMM YYYY HH:mm')}
                 </p>
               )}
               <p>
-                <strong>Total Amount:</strong> {FormatRupiah(quotation.total)}
+                <strong>Total Amount:</strong> {FormatRupiah(invoice.total)}
               </p>
               <p>
-                <strong>Status:</strong> <Badge>{quotation.status}</Badge>
+                <strong>Status:</strong> <Badge>{invoice.status}</Badge>
               </p>
             </div>
           )}
           <h3 className="text-lg font-bold mt-6">Items</h3>
-          <DataTable columns={columns} data={quotation?.items && quotation?.items.length > 0 ? JSON.parse(quotation?.items) : []} loading={loading} />
+          <DataTable columns={columns} data={invoice?.items && invoice?.items.length > 0 ? JSON.parse(invoice?.items) : []} loading={loading} />
         </CardContent>
       </Card>
     </div>

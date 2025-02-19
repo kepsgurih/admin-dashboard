@@ -17,7 +17,7 @@ model Invoice {
   id            String   @id @default(cuid())
   removed       Boolean  @default(false)
   converted     Boolean  @default(false)
-  quotation     String?
+  salesOrder    String?
   date          DateTime @default(now())
   expiredDate   DateTime @default(now())
   customerId    String
@@ -39,6 +39,7 @@ model SalesOrder {
   id            String   @id @default(cuid())
   removed       Boolean  @default(false)
   converted     Boolean  @default(false)
+  quotation     String?
   date          DateTime @default(now())
   expiredDate   DateTime @default(now())
   customerId    String

@@ -6,6 +6,8 @@ import { ArrowRight, BarChart2, Users, Package, ShoppingCart, HeadphonesIcon, Me
 import { useState } from "react"
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs"
 import { useRouter } from "next/navigation"
+import logo from '@/assets/logo/logo.png'
+import Image from "next/image"
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -16,7 +18,7 @@ export default function Home() {
       <header className="px-4 lg:px-6 h-14 flex items-center border-b">
         <Link className="flex items-center justify-center" href="#">
           <span className="sr-only">KEPS ERP</span>
-          <BarChart2 className="h-6 w-6" />
+         <Image src={logo} height={40} width={40} alt="logo" />
           <span className="ml-2 text-xl font-bold">KEPS ERP</span>
         </Link>
         <button className="ml-auto lg:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
