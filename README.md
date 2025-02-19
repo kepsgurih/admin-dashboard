@@ -1,64 +1,105 @@
-<div align="center"><strong>Next.js 15 Admin Dashboard Template</strong></div>
-<div align="center">Built with the Next.js App Router</div>
-<br />
-<div align="center">
-<a href="https://next-admin-dash.vercel.app/">Demo</a>
-<span> · </span>
-<a href="https://vercel.com/templates/next.js/admin-dashboard-tailwind-postgres-react-nextjs">Clone & Deploy</a>
-<span>
-</div>
-
+# Kepsgurih ERP
 ## Overview
+ERP System adalah solusi manajemen bisnis berbasis web yang dirancang untuk mengelola berbagai aspek operasional perusahaan, seperti penjualan, inventaris, keuangan, dan sumber daya manusia. Aplikasi ini dikembangkan menggunakan Next.js 15, Clerk untuk autentikasi, serta Prisma dengan PostgreSQL sebagai database utama.
 
-This is a starter template using the following stack:
+### Features
 
-- Framework - [Next.js (App Router)](https://nextjs.org)
-- Language - [TypeScript](https://www.typescriptlang.org)
-- Auth - [Auth.js](https://authjs.dev)
-- Database - [Postgres](https://vercel.com/postgres)
-- Deployment - [Vercel](https://vercel.com/docs/concepts/next.js/overview)
-- Styling - [Tailwind CSS](https://tailwindcss.com)
-- Components - [Shadcn UI](https://ui.shadcn.com/)
-- Analytics - [Vercel Analytics](https://vercel.com/analytics)
-- Formatting - [Prettier](https://prettier.io)
+#### Sales & Order Management
+Leads Management: Mengelola calon pelanggan dan mengubah mereka menjadi pelanggan tetap.
+Quotation: Pembuatan penawaran harga untuk pelanggan atau prospek.
+Sales Order: Konversi dari quotation menjadi pesanan penjualan.
+Invoice: Pembuatan tagihan berdasarkan pesanan yang telah dikonfirmasi.
+Payment: Pemrosesan dan pencatatan pembayaran dari pelanggan.
 
-This template uses the new Next.js App Router. This includes support for enhanced layouts, colocation of components, tests, and styles, component-level data fetching, and more.
+#### Inventory Management
+Product Management: Mengelola daftar produk dan stok.
+Stock Control: Melacak pergerakan stok masuk dan keluar.
+Supplier Management: Mengelola pemasok dan pembelian barang.
+Warehouse Management: Mengatur penyimpanan barang di berbagai lokasi gudang.
 
-## Getting Started
+#### Customer Relationship Management (CRM)
+Leads & Prospects: Mengelola data prospek bisnis dan peluang penjualan.
+Customer Management: Penyimpanan dan pengelolaan informasi pelanggan.
+Support & Ticketing: Sistem bantuan pelanggan untuk menangani keluhan dan pertanyaan.
 
-During the deployment, Vercel will prompt you to create a new Postgres database. This will add the necessary environment variables to your project.
+#### Human Resources (HRIS)
 
-Inside the Vercel Postgres dashboard, create a table based on the schema defined in this repository.
+Employee Management: Mengelola data karyawan.
+Attendance & Payroll: Pemantauan kehadiran dan penggajian.
+Leave & Time-off Requests: Manajemen cuti karyawan.
 
-```
-CREATE TYPE status AS ENUM ('active', 'inactive', 'archived');
+#### Finance & Accounting
 
-CREATE TABLE products (
-  id SERIAL PRIMARY KEY,
-  image_url TEXT NOT NULL,
-  name TEXT NOT NULL,
-  status status NOT NULL,
-  price NUMERIC(10, 2) NOT NULL,
-  stock INTEGER NOT NULL,
-  available_at TIMESTAMP NOT NULL
-);
-```
+Accounts Payable & Receivable: Mengelola hutang dan piutang.
+Expense Tracking: Pencatatan pengeluaran perusahaan.
+Financial Reports: Pembuatan laporan keuangan.
 
-Then, uncomment `app/api/seed.ts` and hit `http://localhost:3000/api/seed` to seed the database with products.
+## Tech Stack
 
-Next, copy the `.env.example` file to `.env` and update the values. Follow the instructions in the `.env.example` file to set up your GitHub OAuth application.
+- Framework: Next.js 15
+- UI: Shadcn
+- Authentication: Clerk
+- Database ORM: Prisma
+- Database: PostgreSQL
+- API Layer: Next.js API Routes
 
+## Installation
+
+Prerequisites
+Node.js & npm/yarn
+PostgreSQL database
+
+## Setup
+
+1. Clone Repository
 ```bash
-npm i -g vercel
-vercel link
-vercel env pull
+git clone git@github.com:kepsgurih/admin-dashboard.git
+cd admin-dashboard
 ```
-
-Finally, run the following commands to start the development server:
-
+2. Install Dependencies
+```bash
+bun install
 ```
-pnpm install
-pnpm dev
+3. Setup Environment Variables
+4. Buat file .env dan tambahkan:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/erp_db"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="your_clerk_api_key"
+CLERK_SECRET_KEY="your_clerk_backend_key"
+NEXT_PUBLIC_API_URL="http://localhost:3000"
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/apps
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/apps
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
 ```
+5. Migrate Database
+```bash
+bunx prisma migrate dev --name init
+```
+6. Run Development Server
+```bash
+bun run dev
+```
+## Contribution
 
-You should now be able to access the application at http://localhost:3000.
+Jika ingin berkontribusi, silakan buat pull request atau diskusikan ide Anda melalui issues di repository GitHub.
+
+## License
+
+Proyek ini menggunakan lisensi MIT.
+
+
+## Todo
+#### Core
+- [x] User Auth
+- [x] UI
+- [x] Database  
+#### Sales & Order Module
+- [x] Quotation
+- [x] Sales Order 
+- [x] Invoice 
+- [ ] Payment 
+#### CRM
+- [x] Customer
+- [ ] Leads 
+- [ ] Ticketing

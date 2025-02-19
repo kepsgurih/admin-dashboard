@@ -56,9 +56,6 @@
     "tabWidth": 2,
     "trailingComma": "none"
   },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "devDependencies": {
     "@types/node": "^22.13.4",
     "ts-node": "^10.9.2",

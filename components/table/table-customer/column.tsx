@@ -32,7 +32,7 @@ export const columnCustomer: ColumnDef<ICustomer>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex flex-row gap-3'>
-          <Button size={'sm'} asChild><Link href={'/apps/customers/'+row.original.id}><Eye /></Link></Button>
+          <Button size={'sm'} asChild><Link href={'/apps/crm/customers/'+row.original.id}><Eye /></Link></Button>
         </div>
       )
     }

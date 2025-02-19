@@ -57,8 +57,8 @@ const columns: ColumnDef<any>[] = [
             const router = useRouter();
             return (
                 <div className="flex gap-2">
-                    <Button onClick={() => router.push(`/apps/so/${row.original.id}`)}>View</Button>
-                    <Button variant="secondary" onClick={() => router.push(`/apps/so/edit/${row.original.id}`)}>Edit</Button>
+                    <Button onClick={() => router.push(`/apps/sales-and-order/invoice/${row.original.id}`)}>View</Button>
+                    <Button variant="secondary" onClick={() => router.push(`/apps/sales-and-order/invoice/edit/${row.original.id}`)}>Edit</Button>
                 </div>
             );
         },
@@ -66,14 +66,14 @@ const columns: ColumnDef<any>[] = [
 ];
 
 export default function InvoicePage() {
-    const [so, setSo] = useState<invoiceI[]>([]);
+    const [invoice, setInvoice] = useState<invoiceI[]>([]);
     const [loading, setLoading] = useState<boolean>(true)
     const router = useRouter();
 
     useEffect(() => {
-        fetch("/api/v1/so")
+        fetch("/api/v1/invoice")
             .then((res) => res.json())
-            .then((data) => setSo(data))
+            .then((data) => setInvoice(data))
             .catch(() => toast.error("Failed to fetch quotations"))
             .finally(()=>{
                 setLoading(false)
@@ -83,13 +83,13 @@ export default function InvoicePage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Sales Order</CardTitle>
+                <CardTitle>Invoice</CardTitle>
                 <div className="flex justify-end">
-                <Button className="mb-4" onClick={() => router.push("/apps/invoice/new")}>New Sales Order</Button>
+                <Button className="mb-4" onClick={() => router.push("/apps/sales-and-order/invoice/new")}>New Invoice</Button>
                 </div>
             </CardHeader>
             <CardContent>
-                <DataTable columns={columns} data={so} loading={loading} />
+                <DataTable columns={columns} data={invoice} loading={loading} />
             </CardContent>
         </Card>
     );

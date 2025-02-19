@@ -97,7 +97,7 @@ export default function CreateInvoicePage() {
 
     if (response.ok) {
       toast.success("Invoice created successfully!");
-      router.push("/apps/invoice"); // Redirect after creation
+      router.push("/apps/sales-and-order/invoice"); // Redirect after creation
     } else {
       toast.error("Failed to create invoice");
     }

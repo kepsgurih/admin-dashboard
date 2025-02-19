@@ -13,7 +13,7 @@ import { Save, Plus, Minus, Trash } from "lucide-react";
 import moment from "moment";
 import { FormatRupiah } from "@/lib/format";
 
-interface InvoiceItem {
+interface QuotationItem {
   id?: string;
   description: string;
   quantity: number;
@@ -25,14 +25,14 @@ interface Customer {
   name: string;
 }
 
-export default function CreateInvoicePage() {
+export default function CreateQuotationPage() {
   const router = useRouter();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerId, setCustomerId] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [total, setTotal] = useState<string>("");
-  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [items, setItems] = useState<QuotationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // state loading
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function CreateInvoicePage() {
     }
 
     setLoading(true); // Set loading to true while creating
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -96,10 +96,10 @@ export default function CreateInvoicePage() {
     });
 
     if (response.ok) {
-      toast.success("Invoice created successfully!");
-      router.push("/apps/invoice"); // Redirect after creation
+      toast.success("Quotation created successfully!");
+      router.push("/apps/sales-and-order/quotation"); // Redirect after creation
     } else {
-      toast.error("Failed to create invoice");
+      toast.error("Failed to create quotation");
     }
     setLoading(false); // Set loading to false after creation
   };
@@ -108,7 +108,7 @@ export default function CreateInvoicePage() {
     <Card>
       <CardHeader>
         <div className="flex flex-row justify-between items-center">
-          <CardTitle>Create Invoice</CardTitle>
+          <CardTitle>Create Quotation</CardTitle>
           <Button size={"sm"} className="flex gap-2" onClick={handleCreate} disabled={loading}>
             {loading ? "Creating..." : <Save />} Create
           </Button>

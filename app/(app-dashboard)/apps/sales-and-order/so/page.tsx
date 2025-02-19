@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { DataTable } from "@/components/table/table-customer/data-table";
 
-interface Quotation {
+interface invoiceI {
     id: string;
     customerName: string;
     totalAmount: number;
@@ -36,11 +36,6 @@ const columns: ColumnDef<any>[] = [
         header: "approved",
         cell: ({row}) => row.original.approved ? "Yes" : "No"
     },
-    // {
-    //     accessorKey: "isExpired",
-    //     header: "approved",
-    //     cell: ({row}) => row.original.isExpired ? "Yes" : "No"
-    // },
     {
         accessorKey: "status",
         header: "Status",
@@ -56,34 +51,29 @@ const columns: ColumnDef<any>[] = [
         cell: ({ row }) => new Date(row.original.createdDate).toLocaleDateString(),
     },
     {
-        accessorKey: "Invoice",
-        header: "Invoice",
-        cell: ({ row }) => row.original.converted ? "Yes" : "No" 
-    },
-    {
         id: "actions",
         header: "Actions",
         cell: ({ row }) => {
             const router = useRouter();
             return (
                 <div className="flex gap-2">
-                    <Button onClick={() => router.push(`/apps/quotation/${row.original.id}`)}>View</Button>
-                    <Button variant="secondary" onClick={() => router.push(`/apps/quotation/edit/${row.original.id}`)}>Edit</Button>
+                    <Button onClick={() => router.push(`/apps/sales-and-order/so/${row.original.id}`)}>View</Button>
+                    <Button variant="secondary" onClick={() => router.push(`/apps/sales-and-order/so/edit/${row.original.id}`)}>Edit</Button>
                 </div>
             );
         },
     },
 ];
 
-export default function QuotationsPage() {
-    const [quotations, setQuotations] = useState<Quotation[]>([]);
+export default function InvoicePage() {
+    const [so, setSo] = useState<invoiceI[]>([]);
     const [loading, setLoading] = useState<boolean>(true)
     const router = useRouter();
 
     useEffect(() => {
-        fetch("/api/v1/quotation")
+        fetch("/api/v1/so")
             .then((res) => res.json())
-            .then((data) => setQuotations(data))
+            .then((data) => setSo(data))
             .catch(() => toast.error("Failed to fetch quotations"))
             .finally(()=>{
                 setLoading(false)
@@ -93,13 +83,13 @@ export default function QuotationsPage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Quotations</CardTitle>
+                <CardTitle>Sales Order</CardTitle>
                 <div className="flex justify-end">
-                <Button className="mb-4" onClick={() => router.push("/apps/quotation/new")}>New Quotation</Button>
+                <Button className="mb-4" onClick={() => router.push("/apps/sales-and-order/invoice/new")}>New Sales Order</Button>
                 </div>
             </CardHeader>
             <CardContent>
-                <DataTable columns={columns} data={quotations} loading={loading} />
+                <DataTable columns={columns} data={so} loading={loading} />
             </CardContent>
         </Card>
     );

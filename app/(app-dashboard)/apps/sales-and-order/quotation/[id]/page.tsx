@@ -49,7 +49,7 @@ export default function QuotationDetailPage() {
       // Jika berhasil, tampilkan toast success dengan pesan dari API
       if (response.ok) {
         toast.success(result.message || "Quotation successfully converted to invoice");
-        router.push('/apps/invoice')
+        router.push('/apps/sales-and-order/invoice')
       } else {
         // Jika gagal, tampilkan toast error dengan pesan dari API
         toast.error(result.message || "An error occurred while converting quotation");
@@ -109,7 +109,7 @@ export default function QuotationDetailPage() {
       // Jika berhasil, tampilkan toast success dengan pesan dari API
       if (response.ok) {
         toast.success(result.message || "Quotation delete");
-        router.push('/apps/quotation')
+        router.push('/apps/sales-and-order/quotation')
       } else {
         // Jika gagal, tampilkan toast error dengan pesan dari API
         toast.error(result.message || "An error occurred while delete quotation");

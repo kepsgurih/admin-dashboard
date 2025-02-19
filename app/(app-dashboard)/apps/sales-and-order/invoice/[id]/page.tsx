@@ -84,7 +84,7 @@ export default function invoiceDetailPage() {
       // Jika berhasil, tampilkan toast success dengan pesan dari API
       if (response.ok) {
         toast.success(result.message || "Invoice paid");
-        router.push('/apps/invoice')
+        router.push('/apps/sales-and-order/invoice')
       } else {
         // Jika gagal, tampilkan toast error dengan pesan dari API
         toast.error(result.message || "An error occurred while paid");
@@ -110,7 +110,7 @@ export default function invoiceDetailPage() {
       // Jika berhasil, tampilkan toast success dengan pesan dari API
       if (response.ok) {
         toast.success(result.message || "Invoice Deleted");
-        router.push('/apps/invoice')
+        router.push('/apps/sales-and-order/invoice')
       } else {
         // Jika gagal, tampilkan toast error dengan pesan dari API
         toast.error(result.message || "An error occurred while delete invoice");

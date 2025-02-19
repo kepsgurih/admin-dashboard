@@ -42,7 +42,7 @@ const data = {
             title: "Dashboard",
             url: "/apps",
             icon: SquareTerminal,
-            isActive: true,
+            isUrl: '/apps',
             items: [
                 {
                     title: "Overview",
@@ -62,22 +62,23 @@ const data = {
             title: "Sales & Order",
             url: "#",
             icon: PieChart,
+            isUrl: '/apps/sales-and-order',
             items: [
                 {
                     title: "Quotation",
-                    url: "/apps/quotation",
+                    url: "/apps/sales-and-order/quotation",
                 },
                 {
                     title: "Sales Order",
-                    url: "/apps/so",
+                    url: "/apps/sales-and-order/so",
                 },
                 {
                     title: "Invoice",
-                    url: "/apps/invoice",
+                    url: "/apps/sales-and-order/invoice",
                 },
                 {
                     title: "Payment",
-                    url: "/apps/payment",
+                    url: "/apps/sales-and-order/payment",
                 },
             ],
         },
@@ -85,6 +86,7 @@ const data = {
             title: "Inventory",
             url: "#",
             icon: Package,
+            isUrl: '/apps/n1',
             items: [
                 {
                     title: "Products",
@@ -108,6 +110,7 @@ const data = {
             title: "Procurement",
             url: "#",
             icon: FileText,
+            isUrl: '/apps/n2',
             items: [
                 {
                     title: "Purchase Order",
@@ -131,6 +134,7 @@ const data = {
             title: "HRIS",
             url: "#",
             icon: Briefcase,
+            isUrl: '/apps/n3',
             items: [
                 {
                     title: "Employees",
@@ -158,18 +162,19 @@ const data = {
             title: "CRM",
             url: "#",
             icon: Users,
+            isUrl: '/apps/crm',
             items: [
                 {
-                    title: "Customers",
-                    url: "/apps/maintenance",
+                    title: "Leads",
+                    url: "/apps/crm/maintenance",
                 },
                 {
-                    title: "Leads",
-                    url: "/apps/maintenance",
+                    title: "Customers",
+                    url: "/apps/crm/customers",
                 },
                 {
                     title: "Support",
-                    url: "/apps/maintenance",
+                    url: "/apps/crm/maintenance",
                 },
             ],
         },
@@ -177,42 +182,29 @@ const data = {
             title: "Settings",
             url: "#",
             icon: Settings2,
+            isUrl: '/apps/n5',
             items: [
                 {
                     title: "General",
-                    url: "/settings/general",
+                    url: "/apps/crm/maintenance",
                 },
                 {
                     title: "Team",
-                    url: "/settings/team",
+                    url: "/apps/crm/maintenance",
                 },
                 {
                     title: "Billing",
-                    url: "/settings/billing",
+                    url: "/apps/crm/maintenance",
                 },
                 {
                     title: "Limits",
-                    url: "/settings/limits",
+                    url: "/apps/crm/maintenance",
                 },
             ],
         },
     ],
     projects: [
-        // {
-        //   name: "Design Engineering",
-        //   url: "#",
-        //   icon: Frame,
-        // },
-        // {
-        //   name: "Sales & Marketing",
-        //   url: "#",
-        //   icon: PieChart,
-        // },
-        // {
-        //   name: "Travel",
-        //   url: "#",
-        //   icon: Map,
-        // },
+        
     ],
 }
 

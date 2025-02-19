@@ -33,7 +33,7 @@ export default function EditCustomerPage() {
                 setCustomer(data);
             } catch (error) {
                 toast.error("Error fetching customer");
-                router.push("/apps/customers");
+                router.push("/apps/crm/customers");
             }
         };
 
@@ -61,7 +61,7 @@ export default function EditCustomerPage() {
             if (!res.ok) throw new Error("Failed to update customer");
 
             toast.success("Customer updated successfully");
-            router.push("/apps/customers");
+            router.push("/apps/crm/customers");
         } catch (error) {
             toast.error("Error updating customer");
         } finally {
