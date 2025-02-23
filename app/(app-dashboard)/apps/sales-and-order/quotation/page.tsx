@@ -36,11 +36,6 @@ const columns: ColumnDef<any>[] = [
         header: "approved",
         cell: ({row}) => row.original.approved ? "Yes" : "No"
     },
-    // {
-    //     accessorKey: "isExpired",
-    //     header: "approved",
-    //     cell: ({row}) => row.original.isExpired ? "Yes" : "No"
-    // },
     {
         accessorKey: "status",
         header: "Status",
@@ -54,11 +49,6 @@ const columns: ColumnDef<any>[] = [
         accessorKey: "createdAt",
         header: "Created At",
         cell: ({ row }) => new Date(row.original.createdDate).toLocaleDateString(),
-    },
-    {
-        accessorKey: "Invoice",
-        header: "Invoice",
-        cell: ({ row }) => row.original.converted ? "Yes" : "No" 
     },
     {
         id: "actions",
@@ -81,7 +71,7 @@ export default function QuotationsPage() {
     const router = useRouter();
 
     useEffect(() => {
-        fetch("/api/v1/quotation")
+        fetch("/api/v1/document-so/QUOTE")
             .then((res) => res.json())
             .then((data) => setQuotations(data))
             .catch(() => toast.error("Failed to fetch quotations"))

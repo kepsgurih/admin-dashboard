@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,8 +7,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Company {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  phone         String?   @unique
+  address       String?
+  city          String?
+  country       String?
+  website       String?
+  taxId         String?   @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  inventory     Inventory[]
+  product       Product[]
+  purchaseOrder PurchaseOrder[]
+  supplier      Supplier[]
+  payment       Payment[]
+  documentSO      DocumentSO[]
+  customer      Customer[]
+}
+
 model Inventory {
   id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   productId   String   @unique
   product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity    Int      @default(0)
@@ -26,10 +44,12 @@ model Inventory {
 
 model Product {
   id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name        String
+  imageUrl    String?
   description String?
   price       Float
-  stock       Int      @default(0)
   category    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -38,6 +58,8 @@ model Product {
 
 model PurchaseOrder {
   id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   supplierId  String
   supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
   items       Json?
@@ -48,23 +70,26 @@ model PurchaseOrder {
 }
 
 model Supplier {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  phone       String?
-  address     String?
-  city        String?
-  country     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name          String
+  email         String   @unique
+  phone         String?
+  address       String?
+  city          String?
+  country       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   purchaseOrder PurchaseOrder[]
 }
 
-
 model Payment {
   id          String   @id @default(cuid())
-  invoiceId   String
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  documentSoId   String
+  DocumentSO     DocumentSO  @relation(fields: [documentSoId], references: [id], onDelete: Cascade)
   amount      Float
   method      String
   status      String   @default("pending")
@@ -73,16 +98,16 @@ model Payment {
   updatedAt   DateTime @updatedAt
 }
 
-
-model Invoice {
+model DocumentSO {
   id            String   @id @default(cuid())
   removed       Boolean  @default(false)
   converted     Boolean  @default(false)
-  salesOrder    String?
   date          DateTime @default(now())
   expiredDate   DateTime @default(now())
-  customerId    String
-  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  companyId     String?
+  company       Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   items         Json?
   taxRate       Float    @default(0)
   subTotal      Float
@@ -91,66 +116,50 @@ model Invoice {
   credit        Float    @default(0)
   discount      Float    @default(0)
   status        String   @default("draft")
+  type          DocumentType @default(QUOTE)
   approved      Boolean  @default(false)
   createdDate   DateTime @default(now())
   updatedDate   DateTime @updatedAt
-  payment       Payment[]
-}
 
-model SalesOrder {
-  id            String   @id @default(cuid())
-  removed       Boolean  @default(false)
-  converted     Boolean  @default(false)
-  quotation     String?
-  date          DateTime @default(now())
-  expiredDate   DateTime @default(now())
-  customerId    String
-  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  items         Json?
-  taxRate       Float    @default(0)
-  subTotal      Float
-  taxTotal      Float    @default(0)
-  total         Float
-  credit        Float    @default(0)
-  discount      Float    @default(0)
-  status        String   @default("draft")
-  approved      Boolean  @default(false)
-  createdDate   DateTime @default(now())
-  updatedDate   DateTime @updatedAt
-}
-
-model Quotation {
-  id            String   @id @default(cuid())
-  removed       Boolean  @default(false)
-  converted     Boolean  @default(false)
-  date          DateTime @default(now())
-  expiredDate   DateTime @default(now())
-  customerId    String
-  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  items         Json?
-  taxRate       Float    @default(0)
-  subTotal      Float
-  taxTotal      Float    @default(0)
-  total         Float
-  credit        Float    @default(0)
-  discount      Float    @default(0)
-  status        String   @default("draft")
-  approved      Boolean  @default(false)
-  createdDate   DateTime @default(now())
-  updatedDate   DateTime @updatedAt
+  payemnt Payment[]
 }
 
 model Customer {
-  id          String     @id @default(cuid())
+   id          String     @id @default(cuid())
+  companyId   String
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name        String
   email       String     @unique
   phone       String?    @unique
   address     String?
   city        String?
   country     String?
+  fromCompany String?
+  jobTitle    String?
+  source      SourceLead @default(OTHER)
+  customerType CustomerType
+  customField Json?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  invoices    Invoice[]
-  quotations  Quotation[]
-  salesOrder  SalesOrder[]
+  documentSO   DocumentSO[]
+}
+
+enum DocumentType {
+  QUOTE
+  SO
+  INV
+}
+
+enum CustomerType {
+  LEADS
+  CUSTOMER
+}
+enum SourceLead {
+  WEBSITE
+  GOOGLE
+  SOSMED
+  EVENT
+  REFERRAL
+  LEADS
+  OTHER
 }

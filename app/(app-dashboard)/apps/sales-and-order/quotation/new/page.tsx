@@ -36,9 +36,8 @@ export default function CreateQuotationPage() {
   const [loading, setLoading] = useState<boolean>(false); // state loading
 
   useEffect(() => {
-    setLoading(true); // Set loading to true when fetching data
-    // Fetch customers
-    fetch("/api/v1/customer")
+    setLoading(true);
+    fetch("/api/v1/leads")
       .then((res) => res.json())
       .then((data) => setCustomers(data))
       .catch(() => toast.error("Failed to fetch customers"))
@@ -46,7 +45,6 @@ export default function CreateQuotationPage() {
   }, []);
 
   useEffect(() => {
-    // Recalculate total when items change
     const totalAmount = items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0);
     setTotal(FormatRupiah(totalAmount)); // Format to 2 decimal places
   }, [items]);
@@ -75,15 +73,23 @@ export default function CreateQuotationPage() {
   };
 
   const handleCreate = async () => {
-    // Validasi jika ada item dengan deskripsi kosong
     const invalidItem = items.find(item => !item.description.trim());
     if (invalidItem) {
       toast.error("Deskripsi pada setiap item harus diisi!");
       return;
     }
+    if (date === "") {
+      toast.error("Tanggal harus diisi!");
+      return;
+    }
+
+    if (customerId === "") {
+      toast.error("Customer harus diisi!");
+      return;
+    }
 
     setLoading(true); // Set loading to true while creating
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -92,6 +98,7 @@ export default function CreateQuotationPage() {
         total: items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0),
         subTotal: 0,
         items: JSON.stringify(items),
+        type: "QUOTE",
       }),
     });
 
@@ -101,7 +108,7 @@ export default function CreateQuotationPage() {
     } else {
       toast.error("Failed to create quotation");
     }
-    setLoading(false); // Set loading to false after creation
+    setLoading(false);
   };
 
   return (

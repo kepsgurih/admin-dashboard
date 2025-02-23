@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,115 +10,96 @@ import { DataTable } from '@/components/table/table-customer/data-table';
 import moment from 'moment';
 import { FormatRupiah } from '@/lib/format';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Printer, FilePlus, Trash2, MoreVertical, DollarSign } from 'lucide-react';
+import { Printer, FilePlus, Trash2, MoreVertical, CircleMinus, Send, Banknote } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { PdfGenerator } from '@/components/print/print-so';
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
-export default function invoiceDetailPage() {
+interface PaymntMtd {
+  amount: number,
+  method: string
+}
+export default function QuotationDetailPage() {
   const { id } = useParams();
-  const [invoice, setinvoice] = useState<any>(null);
+  const [quotation, setQuotation] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [open, setOpen] = useState<boolean>(false);
   const router = useRouter()
+  const [pm, setPm] = useState<PaymntMtd>({
+    amount: 0,
+    method: ""
+  })
 
   useEffect(() => {
-    async function fetchinvoice() {
+    async function fetchQuotation() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch invoice');
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/INV/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch quotation');
 
         const data = await response.json();
-        setinvoice(data);
+        setQuotation(data);
       } catch (error) {
-        console.error('Error fetching invoice:', error);
+        console.error('Error fetching quotation:', error);
       } finally {
         setLoading(false);
       }
     }
-    fetchinvoice();
+    fetchQuotation();
   }, [id]);
 
-  const handlePrintPDF = async () => {
-    const pdfUrl = `/api/v1/download/inv/${id}`;
-
-    try {
-      // Fetch file PDF dari server
-      const response = await fetch(pdfUrl);
-
-      if (!response.ok) {
-        throw new Error("Failed to generate PDF");
-      }
-
-      const blob = await response.blob();
-
-      // Membuat URL untuk file PDF
-      const url = window.URL.createObjectURL(blob);
-
-      // Membuat elemen <a> untuk melakukan download PDF
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `invoice_${id}.pdf`;
-
-      // Programatically klik untuk mulai download
-      link.click();
-
-      // Release URL setelah selesai
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error printing PDF:", error);
-    }
-  };
-
-  const handlePay = async () => {
+  const handleConvert = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`, {
-        method: "PUT",
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/INV/${id}/convert`, {
+        method: "POST",
         body: JSON.stringify({
-          status: 'paid'
-        })
+          type: "INV",
+          status: "DRAFT",
+        }),
       });
-
-      const result = await response.json();
-
-      // Jika berhasil, tampilkan toast success dengan pesan dari API
-      if (response.ok) {
-        toast.success(result.message || "Invoice paid");
-        router.push('/apps/sales-and-order/invoice')
-      } else {
-        // Jika gagal, tampilkan toast error dengan pesan dari API
-        toast.error(result.message || "An error occurred while paid");
+      if (!response.ok) {
+        toast.error("An error occurred while delete quotation")
       }
+      const result = await response.json();
+      toast.success(result.message);
+      router.push('/apps/sales-and-order/invoice/' + result.data.id)
     } catch (error) {
       console.error(error);
-      // Jika ada error dalam request, tampilkan toast error
-      toast.error("Network error, please try again later");
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDeleteinvoice = async () => {
+
+  const handleDeleteQuotation = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`, {
-        method: "POST"
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}/delete`, {
+        method: "POST",
       });
 
-      const result = await response.json();
-
-      // Jika berhasil, tampilkan toast success dengan pesan dari API
-      if (response.ok) {
-        toast.success(result.message || "Invoice Deleted");
-        router.push('/apps/sales-and-order/invoice')
-      } else {
-        // Jika gagal, tampilkan toast error dengan pesan dari API
-        toast.error(result.message || "An error occurred while delete invoice");
+      if (!response.ok) {
+        toast.error("An error occurred while delete quotation")
       }
+      const result = await response.json();
+      router.push('/apps/sales-and-order/quotation')
+      toast.success(result.message);
     } catch (error) {
       console.error(error);
-      // Jika ada error dalam request, tampilkan toast error
-      toast.error("Network error, please try again later");
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -134,39 +115,114 @@ export default function invoiceDetailPage() {
     },
   ];
 
+  const pdfRef = useRef<{ generatePDF: () => void } | null>(null);
+
+  const handleUpdate = async (val: any) => {
+    setLoading(true); // Set loading to true while updating
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/INV/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(val),
+      });
+      const result = await response.json();
+      toast.success(result.message);
+      setQuotation(result.data);
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+  const handlePayment = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/INV/${id}/pay`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pm)
+      });
+      const result = await res.json();
+      toast.success(result.message);
+      setOpen(false);
+      setQuotation(result.data);
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <div className="container mx-auto py-6 px-4">
       <Card>
-        {/* ✅ Header: Judul di kiri, tombol di kanan */}
         <CardHeader className="flex flex-row items-center justify-between gap-2">
-          {/* 🏷️ Bagian Kiri - Judul */}
           <div>
-            <CardTitle>Invoice Details</CardTitle>
+            <CardTitle>Invoice {quotation?.customer?.name ?? ''}</CardTitle>
             <CardDescription>
-              Detail of Invoice{' '}
-              {loading ? <Skeleton className="h-5 w-32 inline-block" /> : `#${invoice.id}`}
+              Detail of invoice{' '}
+              {loading ? <Skeleton className="h-5 w-32 inline-block" /> : `#${quotation.id}`}
             </CardDescription>
           </div>
+          {
+            !loading && (
+              <PdfGenerator ref={pdfRef} dataPage={quotation} copNumber={`INV/${moment(quotation.createdDate).format('DD/DDD/MM/YY')}`} />
+            )
+          }
+          {
+            loading ? (
+              <Skeleton className="h-5 w-32 inline-block" />
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="p-2">
+                    <MoreVertical size={20} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {
+                    quotation.status === "DRAFT" && (
+                      <DropdownMenuItem onClick={() => handleUpdate({ status: "SENT" })}>
+                        <Send size={16} className="mr-2" /> Send
+                      </DropdownMenuItem>
+                    )
+                  }
+                  {
+                    (quotation.status === "SENT" || quotation.status === "PARTIALLY PAID") && (
+                      <DropdownMenuItem onClick={() => setOpen(!open)}>
+                        <Banknote size={16} className="mr-2" /> Pay
+                      </DropdownMenuItem>
+                    )
+                  }
+                  {
+                    quotation.status !== "CANCELLED" && quotation.status !== "REFUNDED" && (
+                      <DropdownMenuItem onClick={() => pdfRef.current?.generatePDF()}>
+                        <Printer size={16} className="mr-2" /> Print PDF
+                      </DropdownMenuItem>
+                    )
+                  }
+                  {
+                    quotation.status === "DRAFT" && (
+                      <DropdownMenuItem onClick={handleDeleteQuotation} className="text-red-600">
+                        <Trash2 size={16} className="mr-2" /> Delete
+                      </DropdownMenuItem>
+                    )
+                  }
+                  {
+                    quotation.status === "SENT" && (
+                      <DropdownMenuItem onClick={() => handleUpdate({ status: "REFUNDED" })} className="text-red-600">
+                        <CircleMinus size={16} className="mr-2" /> Reject
+                      </DropdownMenuItem>
+                    )
+                  }
 
-          {/* 🔽 Dropdown Menu di semua ukuran layar */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="p-2">
-                <MoreVertical size={20} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handlePay}>
-                <DollarSign size={16} className="mr-2" /> Pay
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handlePrintPDF}>
-                <Printer size={16} className="mr-2" /> Print PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDeleteinvoice} className="text-red-600">
-                <Trash2 size={16} className="mr-2" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+            )
+          }
         </CardHeader>
 
         <CardContent>
@@ -180,31 +236,58 @@ export default function invoiceDetailPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
               <p>
-                <strong>Customer:</strong> {invoice?.customer?.name}
+                <strong>Customer:</strong> {quotation?.customer?.name}
               </p>
               <p>
-                <strong>Document Number:</strong> {`INVOICE/${moment(invoice.createdDate).format('DD/DDD/MM/YY')}`}
+                <strong>Document Number:</strong> {`INV/${moment(quotation.createdDate).format('DD/DDD/MM/YY')}`}
               </p>
               <p>
-                <strong>Issue Date:</strong> {moment(invoice.issueDate).format('DD MMMM YYYY HH:mm')}
+                <strong>Issue Date:</strong> {moment(quotation.issueDate).format('DD MMMM YYYY HH:mm')}
               </p>
-              {invoice.validUntil && (
+              {quotation.validUntil && (
                 <p>
-                  <strong>Valid Until:</strong> {moment(invoice.validUntil).format('DD MMM YYYY HH:mm')}
+                  <strong>Valid Until:</strong> {moment(quotation.validUntil).format('DD MMM YYYY HH:mm')}
                 </p>
               )}
               <p>
-                <strong>Total Amount:</strong> {FormatRupiah(invoice.total)}
+                <strong>Total Amount:</strong> {FormatRupiah(quotation.total)}
               </p>
               <p>
-                <strong>Status:</strong> <Badge>{invoice.status}</Badge>
+                <strong>Status:</strong> <Badge>{quotation.status}</Badge>
               </p>
             </div>
           )}
           <h3 className="text-lg font-bold mt-6">Items</h3>
-          <DataTable columns={columns} data={invoice?.items && invoice?.items.length > 0 ? JSON.parse(invoice?.items) : []} loading={loading} />
+          <DataTable columns={columns} data={quotation?.items && quotation?.items.length > 0 ? JSON.parse(quotation?.items) : []} loading={loading} />
         </CardContent>
       </Card>
+      <Sheet open={open}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Payment Method</SheetTitle>
+            <SheetDescription>
+              Please fill in your payment method
+            </SheetDescription>
+          </SheetHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="method" className="text-left">
+                Payment Method
+              </Label>
+              <Input id="method" value={pm.method} onChange={(e) => setPm({ ...pm, method: e.target.value })} className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="amount" className="text-left">
+                Amount
+              </Label>
+              <Input id="amount" value={pm.amount} onChange={(e) => setPm({ ...pm, amount: Number(e.target.value) })} className="col-span-3" />
+            </div>
+          </div>
+          <SheetFooter>
+            <Button onClick={handlePayment}>Pay</Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

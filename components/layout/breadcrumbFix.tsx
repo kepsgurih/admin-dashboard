@@ -11,19 +11,24 @@ import {
 } from "@/components/ui/breadcrumb"
 import React from "react";
 
-function capitalizeFirstLetter(str:string) {
+function capitalizeFirstLetter(str: string) {
     str = str.replace(/-/g, ' ');
     let splitStr = str.toLowerCase().split(' ');
     for (let i = 0; i < splitStr.length; i++) {
-      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
     }
-  
+
     return splitStr.join(' ');
-  }
+}
 
 export default function BreadcrumbFix() {
     const pathname = usePathname()
     const pathArray = pathname.split("/").filter(Boolean);
+    function getPath(value: string) {
+        const index = pathArray.indexOf(value);
+        if (index === -1) return null; // Jika value tidak ditemukan
+        return "/" + pathArray.slice(0, index + 1).join("/");
+    }
     return (
         <Breadcrumb>
             <BreadcrumbList>
@@ -40,7 +45,7 @@ export default function BreadcrumbFix() {
                         return (
                             <React.Fragment key={index}>
                                 <BreadcrumbItem className="hidden md:block">
-                                    <BreadcrumbLink href="/apps">{capitalizeFirstLetter(item)}</BreadcrumbLink>
+                                    <BreadcrumbLink href={getPath(item) || "/"}>{capitalizeFirstLetter(item)}</BreadcrumbLink>
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator className="hidden md:block" />
                             </React.Fragment>

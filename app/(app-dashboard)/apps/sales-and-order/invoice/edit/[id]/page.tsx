@@ -13,7 +13,7 @@ import { Save, Plus, Minus, Trash } from "lucide-react";
 import moment from "moment";
 import { FormatRupiah } from "@/lib/format";
 
-interface invoiceItem {
+interface QuotationItem {
   id?: string;
   description: string;
   quantity: number;
@@ -25,7 +25,7 @@ interface Customer {
   name: string;
 }
 
-export default function EditinvoicePage() {
+export default function EditQuotationPage() {
   const { id } = useParams();
   const router = useRouter();
 
@@ -34,12 +34,12 @@ export default function EditinvoicePage() {
   const [customerName, setCustomerName] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [total, setTotal] = useState<string>("");
-  const [items, setItems] = useState<invoiceItem[]>([]);
+  const [items, setItems] = useState<QuotationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // state loading
 
   useEffect(() => {
     setLoading(true); // Set loading to true when fetching data
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCustomerId(data.customer.id);
@@ -47,18 +47,17 @@ export default function EditinvoicePage() {
         setDate(data.date.split("T")[0]);
         setItems(data.items.length > 0 ? JSON.parse(data.items) : []);
       })
-      .catch(() => toast.error("Failed to fetch invoice"))
+      .catch(() => toast.error("Failed to fetch quotation"))
       .finally(() => setLoading(false)); // Set loading to false after fetch completes
 
     // Fetch customers
-    fetch("/api/v1/customer")
+    fetch("/api/v1/leads")
       .then((res) => res.json())
       .then((data) => setCustomers(data))
       .catch(() => toast.error("Failed to fetch customers"));
   }, [id]);
 
   useEffect(() => {
-    // Recalculate total when items change
     const totalAmount = items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0);
     setTotal(FormatRupiah(totalAmount)); // Format to 2 decimal places
   }, [items]);
@@ -95,7 +94,7 @@ export default function EditinvoicePage() {
     }
 
     setLoading(true); // Set loading to true while updating
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice/${id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -107,10 +106,10 @@ export default function EditinvoicePage() {
     });
 
     if (response.ok) {
-      toast.success("invoice updated successfully!");
+      toast.success("Quotation updated successfully!");
       router.refresh(); // Reload page after update
     } else {
-      toast.error("Failed to update invoice");
+      toast.error("Failed to update quotation");
     }
     setLoading(false); // Set loading to false after update
   };
@@ -119,7 +118,7 @@ export default function EditinvoicePage() {
     <Card>
       <CardHeader>
         <div className="flex flex-row justify-between items-center">
-          <CardTitle>Edit invoice</CardTitle>
+          <CardTitle>Edit Quotation</CardTitle>
           <Button size={"sm"} className="flex gap-2" onClick={handleUpdate} disabled={loading}>
             {loading ? "Updating..." : <Save />} Update
           </Button>
@@ -210,10 +209,10 @@ export default function EditinvoicePage() {
                 </TableRow>
               ))}
             </TableBody>
+            <Button onClick={handleAddItem} className="mt-2">
+              Add Item
+            </Button>
           </Table>
-          <Button onClick={handleAddItem} className="mt-2">
-            Add Item
-          </Button>
         </div>
       </CardContent>
     </Card>

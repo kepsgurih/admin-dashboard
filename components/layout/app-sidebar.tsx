@@ -166,7 +166,7 @@ const data = {
             items: [
                 {
                     title: "Leads",
-                    url: "/apps/crm/maintenance",
+                    url: "/apps/crm/leads",
                 },
                 {
                     title: "Customers",
@@ -174,7 +174,7 @@ const data = {
                 },
                 {
                     title: "Support",
-                    url: "/apps/crm/maintenance",
+                    url: "/apps/maintenance",
                 },
             ],
         },

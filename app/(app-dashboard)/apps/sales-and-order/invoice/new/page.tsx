@@ -13,7 +13,7 @@ import { Save, Plus, Minus, Trash } from "lucide-react";
 import moment from "moment";
 import { FormatRupiah } from "@/lib/format";
 
-interface InvoiceItem {
+interface QuotationItem {
   id?: string;
   description: string;
   quantity: number;
@@ -25,19 +25,18 @@ interface Customer {
   name: string;
 }
 
-export default function CreateInvoicePage() {
+export default function CreateQuotationPage() {
   const router = useRouter();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerId, setCustomerId] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [total, setTotal] = useState<string>("");
-  const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [items, setItems] = useState<QuotationItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false); // state loading
 
   useEffect(() => {
-    setLoading(true); // Set loading to true when fetching data
-    // Fetch customers
+    setLoading(true);
     fetch("/api/v1/customer")
       .then((res) => res.json())
       .then((data) => setCustomers(data))
@@ -46,7 +45,6 @@ export default function CreateInvoicePage() {
   }, []);
 
   useEffect(() => {
-    // Recalculate total when items change
     const totalAmount = items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0);
     setTotal(FormatRupiah(totalAmount)); // Format to 2 decimal places
   }, [items]);
@@ -75,40 +73,51 @@ export default function CreateInvoicePage() {
   };
 
   const handleCreate = async () => {
-    // Validasi jika ada item dengan deskripsi kosong
     const invalidItem = items.find(item => !item.description.trim());
     if (invalidItem) {
       toast.error("Deskripsi pada setiap item harus diisi!");
       return;
     }
-
-    setLoading(true); // Set loading to true while creating
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/invoice`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customerId,
-        date: moment(date).format(),
-        total: items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0),
-        subTotal: 0,
-        items: JSON.stringify(items),
-      }),
-    });
-
-    if (response.ok) {
-      toast.success("Invoice created successfully!");
-      router.push("/apps/sales-and-order/invoice"); // Redirect after creation
-    } else {
-      toast.error("Failed to create invoice");
+    if (date === "") {
+      toast.error("Tanggal harus diisi!");
+      return;
     }
-    setLoading(false); // Set loading to false after creation
+
+    if(customerId === "") {
+      toast.error("Customer harus diisi!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/SO`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId,
+          date: moment(date).format(),
+          total: items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0),
+          subTotal: items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0),
+          items: JSON.stringify(items),
+        }),
+      });
+
+      const data = await response.json();
+      toast.success(data.message);
+      router.push(`/apps/sales-and-order/so/${data.data.id}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    }
+    finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Card>
       <CardHeader>
         <div className="flex flex-row justify-between items-center">
-          <CardTitle>Create Invoice</CardTitle>
+          <CardTitle>Create Sales Order</CardTitle>
           <Button size={"sm"} className="flex gap-2" onClick={handleCreate} disabled={loading}>
             {loading ? "Creating..." : <Save />} Create
           </Button>

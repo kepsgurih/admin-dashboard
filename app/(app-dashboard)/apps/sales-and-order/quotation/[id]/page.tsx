@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +10,10 @@ import { DataTable } from '@/components/table/table-customer/data-table';
 import moment from 'moment';
 import { FormatRupiah } from '@/lib/format';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Printer, FilePlus, Trash2, MoreVertical } from 'lucide-react';
+import { Printer, FilePlus, Trash2, MoreVertical, Stamp, CircleMinus, Send } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { PdfGenerator } from '@/components/print/print-so';
 
 export default function QuotationDetailPage() {
   const { id } = useParams();
@@ -23,7 +24,7 @@ export default function QuotationDetailPage() {
   useEffect(() => {
     async function fetchQuotation() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`);
         if (!response.ok) throw new Error('Failed to fetch quotation');
 
         const data = await response.json();
@@ -37,87 +38,66 @@ export default function QuotationDetailPage() {
     fetchQuotation();
   }, [id]);
 
-  const handleConvertToInvoice = async () => {
+  const handleConvertToSalesOrder = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}/convert`, {
         method: "POST",
+        body: JSON.stringify({
+          type: "SO",
+          status: "DRAFT",
+        }),
       });
-  
-      const result = await response.json();
-  
-      // Jika berhasil, tampilkan toast success dengan pesan dari API
-      if (response.ok) {
-        toast.success(result.message || "Quotation successfully converted to invoice");
-        router.push('/apps/sales-and-order/invoice')
-      } else {
-        // Jika gagal, tampilkan toast error dengan pesan dari API
-        toast.error(result.message || "An error occurred while converting quotation");
+      if (!response.ok) {
+        toast.error("An error occurred while delete quotation")
       }
+      const result = await response.json();
+      toast.success(result.message);
+      router.push('/apps/sales-and-order/so/' + result.data.id)
     } catch (error) {
       console.error(error);
-      // Jika ada error dalam request, tampilkan toast error
-      toast.error("Network error, please try again later");
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-  
 
-
-  const handlePrintPDF = async () => {
-    const pdfUrl = `/api/v1/download/quote/${id}`;
-    
+  const handleUpdate = async (val: any) => {
+    setLoading(true); // Set loading to true while updating
     try {
-      // Fetch file PDF dari server
-      const response = await fetch(pdfUrl);
-      
-      if (!response.ok) {
-        throw new Error("Failed to generate PDF");
-      }
-  
-      const blob = await response.blob();
-      
-      // Membuat URL untuk file PDF
-      const url = window.URL.createObjectURL(blob);
-      
-      // Membuat elemen <a> untuk melakukan download PDF
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `quotation_${id}.pdf`;
-      
-      // Programatically klik untuk mulai download
-      link.click();
-      
-      // Release URL setelah selesai
-      window.URL.revokeObjectURL(url);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(val),
+      });
+      const result = await response.json();
+      toast.success(result.message);
+      setQuotation(result.data);
     } catch (error) {
-      console.error("Error printing PDF:", error);
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    }
+    finally {
+      setLoading(false);
     }
   };
-  
 
   const handleDeleteQuotation = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}/delete`, {
-        method: "POST",
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`, {
+        method: "DELETE",
       });
-  
-      const result = await response.json();
-  
-      // Jika berhasil, tampilkan toast success dengan pesan dari API
-      if (response.ok) {
-        toast.success(result.message || "Quotation delete");
-        router.push('/apps/sales-and-order/quotation')
-      } else {
-        // Jika gagal, tampilkan toast error dengan pesan dari API
-        toast.error(result.message || "An error occurred while delete quotation");
+
+      if (!response.ok) {
+        toast.error("An error occurred while delete quotation")
       }
+      const result = await response.json();
+      router.push('/apps/sales-and-order/quotation')
+      toast.success(result.message);
     } catch (error) {
       console.error(error);
-      // Jika ada error dalam request, tampilkan toast error
-      toast.error("Network error, please try again later");
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -133,12 +113,12 @@ export default function QuotationDetailPage() {
     },
   ];
 
+  const pdfRef = useRef<{ generatePDF: () => void } | null>(null);
+
   return (
     <div className="container mx-auto py-6 px-4">
       <Card>
-        {/* ✅ Header: Judul di kiri, tombol di kanan */}
         <CardHeader className="flex flex-row items-center justify-between gap-2">
-          {/* 🏷️ Bagian Kiri - Judul */}
           <div>
             <CardTitle>Quotation Details</CardTitle>
             <CardDescription>
@@ -146,26 +126,74 @@ export default function QuotationDetailPage() {
               {loading ? <Skeleton className="h-5 w-32 inline-block" /> : `#${quotation.id}`}
             </CardDescription>
           </div>
+          {
+            !loading && (
+              <PdfGenerator ref={pdfRef} dataPage={quotation} copNumber={`QUOTE/${moment(quotation.createdDate).format('DD/DDD/MM/YY')}`} />
+            )
+          }
+          {
+            loading ? (
+              <Skeleton className="h-5 w-32 inline-block" />
+            ) : (
+              <>
+                {
+                  quotation.status !== "REJECTED" && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="p-2">
+                          <MoreVertical size={20} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {
+                          quotation.status !== "DRAFT" && quotation.status !== "expired" && quotation.status !== "REJECTED" && (
+                            <DropdownMenuItem onClick={handleConvertToSalesOrder}>
+                              <FilePlus size={16} className="mr-2" /> Convert to Sales Order
+                            </DropdownMenuItem>
+                          )
+                        }
+                        {quotation.status === "DRAFT" && (
+                          <DropdownMenuItem onClick={() => handleUpdate({ status: "APPROVED" })}>
+                            <Stamp size={16} className="mr-2" /> Approve
+                          </DropdownMenuItem>
+                        )
+                        }
+                        {quotation.status === "APPROVED" && (
+                          <DropdownMenuItem onClick={() => handleUpdate({ status: "SENT" })}>
+                            <Send size={16} className="mr-2" /> Sent
+                          </DropdownMenuItem>
+                        )
+                        }
 
-          {/* 🔽 Dropdown Menu di semua ukuran layar */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="p-2">
-                <MoreVertical size={20} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleConvertToInvoice}>
-                <FilePlus size={16} className="mr-2" /> Convert to Sales Order
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handlePrintPDF}>
-                <Printer size={16} className="mr-2" /> Print PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDeleteQuotation} className="text-red-600">
-                <Trash2 size={16} className="mr-2" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                        {
+                          quotation.status !== "DRAFT" && quotation.status !== "REJECTED" && quotation.status !== "EXPIRED" && (
+                            <>
+                              <DropdownMenuItem onClick={() => pdfRef.current?.generatePDF()}>
+                                <Printer size={16} className="mr-2" /> Print PDF
+                              </DropdownMenuItem>
+                            </>
+                          )
+                        }
+
+                        {
+                          quotation.status !== "DRAFT" ? (
+                            <DropdownMenuItem onClick={() => handleUpdate({ status: "REJECTED" })} className="text-red-600">
+                              <CircleMinus size={16} className="mr-2" /> Reject
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={handleDeleteQuotation} className="text-red-600">
+                              <Trash2 size={16} className="mr-2" /> Delete
+                            </DropdownMenuItem>
+                          )
+                        }
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )
+                }
+              </>
+
+            )
+          }
         </CardHeader>
 
         <CardContent>
@@ -196,7 +224,7 @@ export default function QuotationDetailPage() {
                 <strong>Total Amount:</strong> {FormatRupiah(quotation.total)}
               </p>
               <p>
-                <strong>Status:</strong> <Badge>{quotation.status}</Badge>
+                <strong>Status:</strong> <Badge variant={quotation.status === "REJECTED" ? "destructive" : "default"}>{quotation.status}</Badge>
               </p>
             </div>
           )}

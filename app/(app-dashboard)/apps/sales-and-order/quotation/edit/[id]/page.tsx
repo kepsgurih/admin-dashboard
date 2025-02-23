@@ -39,7 +39,7 @@ export default function EditQuotationPage() {
 
   useEffect(() => {
     setLoading(true); // Set loading to true when fetching data
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setCustomerId(data.customer.id);
@@ -51,14 +51,13 @@ export default function EditQuotationPage() {
       .finally(() => setLoading(false)); // Set loading to false after fetch completes
 
     // Fetch customers
-    fetch("/api/v1/customer")
+    fetch("/api/v1/leads")
       .then((res) => res.json())
       .then((data) => setCustomers(data))
       .catch(() => toast.error("Failed to fetch customers"));
   }, [id]);
 
   useEffect(() => {
-    // Recalculate total when items change
     const totalAmount = items.reduce((acc, item) => acc + item.quantity * item.unitPrice, 0);
     setTotal(FormatRupiah(totalAmount)); // Format to 2 decimal places
   }, [items]);
@@ -95,7 +94,7 @@ export default function EditQuotationPage() {
     }
 
     setLoading(true); // Set loading to true while updating
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/quotation/${id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -210,10 +209,10 @@ export default function EditQuotationPage() {
                 </TableRow>
               ))}
             </TableBody>
+            <Button onClick={handleAddItem} className="mt-2">
+              Add Item
+            </Button>
           </Table>
-          <Button onClick={handleAddItem} className="mt-2">
-            Add Item
-          </Button>
         </div>
       </CardContent>
     </Card>

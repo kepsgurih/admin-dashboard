@@ -91,15 +91,43 @@ Proyek ini menggunakan lisensi MIT.
 
 ## Todo
 #### Core
-- [x] User Auth
+- [x] AUTH
 - [x] UI
-- [x] Database  
+- [x] DATABASE  
+- [ ] RBAC  
+- [ ] CUSTOM MENU  
+- [ ] OVERVIEW
+- [ ] ANALYSTICTS
+- [ ] REPORT
 #### Sales & Order Module
 - [x] Quotation
 - [x] Sales Order 
 - [x] Invoice 
-- [ ] Payment 
+- [x] Payment 
 #### CRM
 - [x] Customer
-- [ ] Leads 
+- [x] Leads 
 - [ ] Ticketing
+#### INVENTORY
+- [ ] PRODUCT
+- [ ] CATEGORIES 
+- [ ] STOCK MANAGEMENT
+- [ ] SUPPLIER
+- [ ] CONNECT TO SO
+#### PROCUREMENT
+- [ ] PO
+- [ ] VENDOR MANAGEMENT 
+- [ ] RECEIVING
+- [ ] BILLS
+- [ ] CONNECT TO INVENTORY AND SO
+#### PROCUREMENT
+- [ ] EMPLOYEES
+- [ ] ATTENDANCE
+- [ ] PAYROLL
+- [ ] LEAVES
+- [ ] RECRUITMENT
+#### SETTING
+- [ ] GENERAL
+- [ ] TEAMS
+- [ ] BILLING
+- [ ] LIMIT
