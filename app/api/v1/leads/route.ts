@@ -9,7 +9,8 @@ export async function GET() {
   }
   const customers = await prisma.customer.findMany({
     where: {
-      customerType: 'LEADS'
+      customerType: 'LEADS',
+      companyId: user?.publicMetadata?.group
     }
   });
   return NextResponse.json(customers);
