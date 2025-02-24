@@ -3,7 +3,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = Promise<{ slug: string, id: string }>
-export async function POST(req: NextRequest, segment: { params: Params }) {
+export async function GET(req: NextRequest, segment: { params: Params }) {
     const user = await currentUser()
     const params = await segment.params
     const { slug, id } = params;
@@ -31,6 +31,9 @@ export async function POST(req: NextRequest, segment: { params: Params }) {
                 company: true
             }
         });
+        if (!response) {
+            return NextResponse.json({ message: "Document not found" }, { status: 404 });
+        }
         return NextResponse.json(response);
     } catch (error) {
         return NextResponse.json({ message: error instanceof Error ? error.message : "Something went wrong", error }, { status: 500 });

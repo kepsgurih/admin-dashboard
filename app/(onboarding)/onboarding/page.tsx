@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 export default async function Page() {
     const session = await auth()
+    if (!session.userId) return session.redirectToSignIn()
     const group = session.sessionClaims?.metadata?.group
-    if(!session.userId)  return session.redirectToSignIn()
-    if(group) return redirect('/apps')
+    if (group) return redirect('/apps')
     return (
         <div className="flex items-center justify-center min-h-screen w-full">
             <InputOnboarding />

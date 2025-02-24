@@ -21,16 +21,20 @@ export default function QuotationDetailPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter()
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     async function fetchQuotation() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/SO/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch quotation');
-
-        const data = await response.json();
-        setQuotation(data);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`);
+        const result = await response.json();
+        if (!response.ok) {
+          toast.error(result.message)
+          setError(response.status + ':  ' + result.message);
+        }
+        setQuotation(result);
       } catch (error) {
-        console.error('Error fetching quotation:', error);
+        console.error('Error fetching sales order:', error);
       } finally {
         setLoading(false);
       }
@@ -115,6 +119,27 @@ export default function QuotationDetailPage() {
   };
 
   const pdfRef = useRef<{ generatePDF: () => void } | null>(null);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-6 px-4 flex flex-col items-center">
+        <h2 className="text-2xl font-bold">Loading...</h2>
+        <Skeleton className="h-6 w-32 mt-2" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-6 px-4 flex flex-col items-center">
+        <h2 className="text-2xl font-bold text-red-600">Error</h2>
+        <p className="text-lg">{error}</p>
+        <Button onClick={() => router.push('/apps/sales-and-order/so')} className="mt-4">
+          Back to Sales Order
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 px-4">

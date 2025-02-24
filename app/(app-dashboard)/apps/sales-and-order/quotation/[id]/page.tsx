@@ -19,16 +19,19 @@ export default function QuotationDetailPage() {
   const { id } = useParams();
   const [quotation, setQuotation] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter()
 
   useEffect(() => {
     async function fetchQuotation() {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch quotation');
-
-        const data = await response.json();
-        setQuotation(data);
+        const result = await response.json();
+        if (!response.ok) {
+          toast.error(result.message)
+          setError(response.status + ':  ' + result.message);
+        }
+        setQuotation(result);
       } catch (error) {
         console.error('Error fetching quotation:', error);
       } finally {
@@ -48,14 +51,16 @@ export default function QuotationDetailPage() {
           status: "DRAFT",
         }),
       });
-      if (!response.ok) {
-        toast.error("An error occurred while delete quotation")
-      }
       const result = await response.json();
+      if (!response.ok) {
+        toast.error(result.message)
+        setError(result.message);
+      }
       toast.success(result.message);
       router.push('/apps/sales-and-order/so/' + result.data.id)
     } catch (error) {
       console.error(error);
+      setError(error instanceof Error ? error.message : 'An unknown error occurred');
       toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setLoading(false);
@@ -115,6 +120,27 @@ export default function QuotationDetailPage() {
 
   const pdfRef = useRef<{ generatePDF: () => void } | null>(null);
 
+  if (loading) {
+    return (
+      <div className="container mx-auto py-6 px-4 flex flex-col items-center">
+        <h2 className="text-2xl font-bold">Loading...</h2>
+        <Skeleton className="h-6 w-32 mt-2" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-6 px-4 flex flex-col items-center">
+        <h2 className="text-2xl font-bold text-red-600">Error</h2>
+        <p className="text-lg">{error}</p>
+        <Button onClick={() => router.push('/apps/sales-and-order/quotation')} className="mt-4">
+          Back to Quotations
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-6 px-4">
       <Card>
@@ -123,77 +149,54 @@ export default function QuotationDetailPage() {
             <CardTitle>Quotation Details</CardTitle>
             <CardDescription>
               Detail of quotation{' '}
-              {loading ? <Skeleton className="h-5 w-32 inline-block" /> : `#${quotation.id}`}
+              {loading ? <Skeleton className="h-5 w-32 inline-block" /> : `#${quotation?.id}`}
             </CardDescription>
           </div>
-          {
-            !loading && (
-              <PdfGenerator ref={pdfRef} dataPage={quotation} copNumber={`QUOTE/${moment(quotation.createdDate).format('DD/DDD/MM/YY')}`} />
-            )
-          }
-          {
-            loading ? (
-              <Skeleton className="h-5 w-32 inline-block" />
-            ) : (
-              <>
-                {
-                  quotation.status !== "REJECTED" && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="p-2">
-                          <MoreVertical size={20} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {
-                          quotation.status !== "DRAFT" && quotation.status !== "expired" && quotation.status !== "REJECTED" && (
-                            <DropdownMenuItem onClick={handleConvertToSalesOrder}>
-                              <FilePlus size={16} className="mr-2" /> Convert to Sales Order
-                            </DropdownMenuItem>
-                          )
-                        }
-                        {quotation.status === "DRAFT" && (
-                          <DropdownMenuItem onClick={() => handleUpdate({ status: "APPROVED" })}>
-                            <Stamp size={16} className="mr-2" /> Approve
-                          </DropdownMenuItem>
-                        )
-                        }
-                        {quotation.status === "APPROVED" && (
-                          <DropdownMenuItem onClick={() => handleUpdate({ status: "SENT" })}>
-                            <Send size={16} className="mr-2" /> Sent
-                          </DropdownMenuItem>
-                        )
-                        }
 
-                        {
-                          quotation.status !== "DRAFT" && quotation.status !== "REJECTED" && quotation.status !== "EXPIRED" && (
-                            <>
-                              <DropdownMenuItem onClick={() => pdfRef.current?.generatePDF()}>
-                                <Printer size={16} className="mr-2" /> Print PDF
-                              </DropdownMenuItem>
-                            </>
-                          )
-                        }
+          {!loading && quotation && (
+            <PdfGenerator ref={pdfRef} dataPage={quotation} copNumber={`QUOTE/${moment(quotation.createdDate).format('DD/DDD/MM/YY')}`} />
+          )}
 
-                        {
-                          quotation.status !== "DRAFT" ? (
-                            <DropdownMenuItem onClick={() => handleUpdate({ status: "REJECTED" })} className="text-red-600">
-                              <CircleMinus size={16} className="mr-2" /> Reject
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={handleDeleteQuotation} className="text-red-600">
-                              <Trash2 size={16} className="mr-2" /> Delete
-                            </DropdownMenuItem>
-                          )
-                        }
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )
-                }
-              </>
-
-            )
-          }
+          {!loading && quotation && quotation.status !== "REJECTED" && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="p-2">
+                  <MoreVertical size={20} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {quotation.status !== "DRAFT" && quotation.status !== "EXPIRED" && quotation.status !== "REJECTED" && (
+                  <DropdownMenuItem onClick={handleConvertToSalesOrder}>
+                    <FilePlus size={16} className="mr-2" /> Convert to Sales Order
+                  </DropdownMenuItem>
+                )}
+                {quotation.status === "DRAFT" && (
+                  <DropdownMenuItem onClick={() => handleUpdate({ status: "APPROVED" })}>
+                    <Stamp size={16} className="mr-2" /> Approve
+                  </DropdownMenuItem>
+                )}
+                {quotation.status === "APPROVED" && (
+                  <DropdownMenuItem onClick={() => handleUpdate({ status: "SENT" })}>
+                    <Send size={16} className="mr-2" /> Sent
+                  </DropdownMenuItem>
+                )}
+                {quotation.status !== "DRAFT" && quotation.status !== "REJECTED" && quotation.status !== "EXPIRED" && (
+                  <DropdownMenuItem onClick={() => pdfRef.current?.generatePDF()}>
+                    <Printer size={16} className="mr-2" /> Print PDF
+                  </DropdownMenuItem>
+                )}
+                {quotation.status !== "DRAFT" ? (
+                  <DropdownMenuItem onClick={() => handleUpdate({ status: "REJECTED" })} className="text-red-600">
+                    <CircleMinus size={16} className="mr-2" /> Reject
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={handleDeleteQuotation} className="text-red-600">
+                    <Trash2 size={16} className="mr-2" /> Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </CardHeader>
 
         <CardContent>
@@ -207,29 +210,33 @@ export default function QuotationDetailPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
               <p>
-                <strong>Customer:</strong> {quotation?.customer?.name}
+                <strong>Customer:</strong> {quotation?.customer?.name || <Skeleton className="h-5 w-24 inline-block" />}
               </p>
               <p>
-                <strong>Document Number:</strong> {`QUOTE/${moment(quotation.createdDate).format('DD/DDD/MM/YY')}`}
+                <strong>Document Number:</strong> {`QUOTE/${moment(quotation?.createdDate).format('DD/DDD/MM/YY')}`}
               </p>
               <p>
-                <strong>Issue Date:</strong> {moment(quotation.issueDate).format('DD MMMM YYYY HH:mm')}
+                <strong>Issue Date:</strong> {moment(quotation?.issueDate).format('DD MMMM YYYY HH:mm')}
               </p>
-              {quotation.validUntil && (
+              {quotation?.validUntil && (
                 <p>
                   <strong>Valid Until:</strong> {moment(quotation.validUntil).format('DD MMM YYYY HH:mm')}
                 </p>
               )}
               <p>
-                <strong>Total Amount:</strong> {FormatRupiah(quotation.total)}
+                <strong>Total Amount:</strong> {FormatRupiah(quotation?.total)}
               </p>
               <p>
-                <strong>Status:</strong> <Badge variant={quotation.status === "REJECTED" ? "destructive" : "default"}>{quotation.status}</Badge>
+                <strong>Status:</strong> <Badge variant={quotation?.status === "REJECTED" ? "destructive" : "default"}>{quotation?.status}</Badge>
               </p>
             </div>
           )}
           <h3 className="text-lg font-bold mt-6">Items</h3>
-          <DataTable columns={columns} data={quotation?.items && quotation?.items.length > 0 ? JSON.parse(quotation?.items) : []} loading={loading} />
+          <DataTable
+            columns={columns}
+            data={quotation?.items && quotation?.items.length > 0 ? JSON.parse(quotation?.items) : []}
+            loading={loading}
+          />
         </CardContent>
       </Card>
     </div>

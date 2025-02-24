@@ -18,13 +18,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet"
 
 interface PaymntMtd {
@@ -41,47 +39,26 @@ export default function QuotationDetailPage() {
     amount: 0,
     method: ""
   })
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchQuotation() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/INV/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch quotation');
-
-        const data = await response.json();
-        setQuotation(data);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`);
+        const result = await response.json();
+        if (!response.ok) {
+          toast.error(result.message)
+          setError(response.status + ':  ' + result.message);
+        }
+        setQuotation(result);
       } catch (error) {
-        console.error('Error fetching quotation:', error);
+        console.error('Error fetching sales order:', error);
       } finally {
         setLoading(false);
       }
     }
     fetchQuotation();
   }, [id]);
-
-  const handleConvert = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/INV/${id}/convert`, {
-        method: "POST",
-        body: JSON.stringify({
-          type: "INV",
-          status: "DRAFT",
-        }),
-      });
-      if (!response.ok) {
-        toast.error("An error occurred while delete quotation")
-      }
-      const result = await response.json();
-      toast.success(result.message);
-      router.push('/apps/sales-and-order/invoice/' + result.data.id)
-    } catch (error) {
-      console.error(error);
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
 
 
   const handleDeleteQuotation = async () => {
@@ -155,6 +132,28 @@ export default function QuotationDetailPage() {
       setLoading(false);
     }
   }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-6 px-4 flex flex-col items-center">
+        <h2 className="text-2xl font-bold">Loading...</h2>
+        <Skeleton className="h-6 w-32 mt-2" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-6 px-4 flex flex-col items-center">
+        <h2 className="text-2xl font-bold text-red-600">Error</h2>
+        <p className="text-lg">{error}</p>
+        <Button onClick={() => router.push('/apps/sales-and-order/quotation')} className="mt-4">
+          Back to Quotations
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-6 px-4">
       <Card>

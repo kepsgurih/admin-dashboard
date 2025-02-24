@@ -109,7 +109,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="w-full max-w-sm space-y-2">
-                <Button className="w-full" size="lg">
+                <Button className="w-full" size="lg" onClick={() => router.push('/apps')}>
                   Request a Demo <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
