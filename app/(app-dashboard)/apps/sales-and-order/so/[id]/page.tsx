@@ -26,7 +26,7 @@ export default function QuotationDetailPage() {
   useEffect(() => {
     async function fetchQuotation() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/QUOTE/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/document-so/SO/${id}`);
         const result = await response.json();
         if (!response.ok) {
           toast.error(result.message)
