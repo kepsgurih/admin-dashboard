@@ -42,11 +42,11 @@ const data = {
             title: "Dashboard",
             url: "/apps",
             icon: SquareTerminal,
-            isUrl: '/apps',
+            isUrl: '/apps/dashboard',
             items: [
                 {
                     title: "Overview",
-                    url: "/apps/",
+                    url: "/apps/dashboard",
                 },
                 {
                     title: "Analytics",

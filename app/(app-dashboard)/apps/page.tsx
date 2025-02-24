@@ -1,7 +1,5 @@
-export default function Page(){
-  return (
-    <div>
-      test
-    </div>
-  );
+import { redirect } from "next/navigation";
+
+export default function Page() {
+    return redirect('/apps/dashboard')
 }
